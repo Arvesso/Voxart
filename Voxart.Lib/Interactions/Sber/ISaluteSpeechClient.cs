@@ -1,4 +1,6 @@
-﻿namespace Voxart.Lib.Interactions.Sber
+﻿using Voxart.Shared;
+
+namespace Voxart.Lib.Interactions.Sber
 {
     public interface ISaluteSpeechClient
     {

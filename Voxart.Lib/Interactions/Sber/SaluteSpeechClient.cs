@@ -1,18 +1,9 @@
 ﻿using RestSharp;
 using System.Text.Json.Serialization;
+using Voxart.Shared;
 
 namespace Voxart.Lib.Interactions.Sber
 {
-    public enum AudioFormat
-    {
-        wav16, 
-    }
-
-    public enum VoiceCode
-    {
-        Nec_24000,
-    }
-
     public class SaluteSpeechClient : ISaluteSpeechClient, IDisposable
     {
         readonly RestClient _client;

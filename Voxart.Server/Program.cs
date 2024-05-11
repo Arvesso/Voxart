@@ -1,4 +1,5 @@
 using Voxart.Lib.Interactions.Sber;
+using Voxart.Lib.Extensions;
 
 namespace Voxart.Server
 {
@@ -7,13 +8,16 @@ namespace Voxart.Server
         public static void Main(string[] args)
         {
             var builder = WebApplication.CreateBuilder(args);
+            var config = builder.Configuration;
 
             builder.Services.AddControllers();
 
-            builder.Services.AddSingleton<ISaluteSpeechClient>(
-                new SaluteSpeechClient(builder.Configuration["Auth:Sber:ApiKey"]!, builder.Configuration["Auth:Sber:ApiKeySecret"]!));
+            builder.Services.AddDatabase(config.GetConnectionString("MySql")!);
 
-            //builder.WebHost.UseUrls(builder.Configuration["Listen"]!);
+            builder.Services.AddSingleton<ISaluteSpeechClient>(
+                new SaluteSpeechClient(config["Auth:Sber:ApiKey"]!, config["Auth:Sber:ApiKeySecret"]!));
+
+            //builder.WebHost.UseUrls(builder.Configuration["Listen"]!); Production!
 
             var app = builder.Build();
 
