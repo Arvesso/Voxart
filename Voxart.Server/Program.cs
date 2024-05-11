@@ -1,3 +1,5 @@
+using Voxart.Lib.Interactions.Sber;
+
 namespace Voxart.Server
 {
     public class Program
@@ -6,17 +8,17 @@ namespace Voxart.Server
         {
             var builder = WebApplication.CreateBuilder(args);
 
-            // Add services to the container.
-
             builder.Services.AddControllers();
+
+            builder.Services.AddSingleton<ISaluteSpeechClient>(
+                new SaluteSpeechClient(builder.Configuration["Auth:Sber:ApiKey"]!, builder.Configuration["Auth:Sber:ApiKeySecret"]!));
+
+            //builder.WebHost.UseUrls(builder.Configuration["Listen"]!);
 
             var app = builder.Build();
 
-            // Configure the HTTP request pipeline.
-
             app.UseAuthorization();
-
-
+            
             app.MapControllers();
 
             app.Run();

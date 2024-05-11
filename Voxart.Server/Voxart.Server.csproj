@@ -9,7 +9,6 @@
   <ItemGroup>
     <ProjectReference Include="..\Voxart.Client\Voxart.Client.csproj" />
     <ProjectReference Include="..\Voxart.Lib\Voxart.Lib.csproj" />
-    <ProjectReference Include="..\Voxart.Shared\Voxart.Shared.csproj" />
   </ItemGroup>
 
 </Project>
