@@ -1,14 +1,12 @@
 using Voxart.Lib.Interactions.Sber;
-using Voxart.Lib.Extensions;
 
 namespace Voxart.Server
 {
-    public class Program
+    public class Startup
     {
-        public static void Main(string[] args)
+        public static void Main()
         {
-            var builder = WebApplication.CreateBuilder(args);
-            var config = builder.Configuration;
+            var (builder, config) = StartupExtensions.CreateBuilder();
 
             builder.Services.AddControllers();
 

@@ -12,6 +12,6 @@
 
     public enum FileFormat
     {
-        Audio, Video
+        Wav16, MP3, MP4
     }
 }

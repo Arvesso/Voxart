@@ -16,4 +16,8 @@
     <ProjectReference Include="..\Voxart.Shared\Voxart.Shared.csproj" />
   </ItemGroup>
 
+  <ItemGroup>
+    <Folder Include="Extensions\" />
+  </ItemGroup>
+
 </Project>

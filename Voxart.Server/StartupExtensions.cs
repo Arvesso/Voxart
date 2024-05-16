@@ -1,8 +1,7 @@
 ﻿using Microsoft.EntityFrameworkCore;
-using Microsoft.Extensions.DependencyInjection;
 using Voxart.Lib.Database;
 
-namespace Voxart.Lib.Extensions
+namespace Voxart.Server
 {
     public static class StartupExtensions
     {
@@ -10,6 +9,13 @@ namespace Voxart.Lib.Extensions
         {
             services.AddMySql<AppDbContext>(connection, new MySqlServerVersion(new Version(8, 0, 34)));
             return services;
+        }
+
+        public static (WebApplicationBuilder builder, ConfigurationManager config) CreateBuilder()
+        {
+            var builder = WebApplication.CreateBuilder();
+            var config = builder.Configuration;
+            return (builder, config);
         }
     }
 }
