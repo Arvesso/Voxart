@@ -1,0 +1,117 @@
+﻿@page "/speech"
+
+@inject ISnackbar Snackbar
+@inject IJSRuntime JS
+
+<PageTitle>Speech</PageTitle>
+
+<MudGrid Spacing="10">
+    <MudItem xs="12" sm="6">
+        <h2>Синтез</h2>
+        <MudText Class="mt-6 mb-2">Выберите голос озвучивания</MudText>
+        <MudChipSet @bind-SelectedChip="selectedVoice" Filter="true" Mandatory>
+            @foreach (var kv in Shared.VoiceValues)
+            {
+                <MudChip Text="@kv.Key" Color="Color.Secondary">@kv.Value</MudChip>
+            }
+        </MudChipSet>
+
+        <MudText Class="mt-4 mb-2">Введите текст для озвучивания</MudText>
+        <MudTextField T="string" Counter="@MaxCharactersInTextInput" MaxLength="@MaxCharactersInTextInput" Immediate="true" AutoGrow Validation="@(new Func<string, IEnumerable<string>>(MaxCharacters))" Label="Введите текст для озвучивания" Variant="Variant.Filled" />
+
+        <MudButton Class="mt-4" Color="Color.Primary" Variant="Variant.Filled">Синтезировать</MudButton>
+    </MudItem>
+
+    <MudItem xs="12" sm="6">
+        <h2>Распознавание</h2>
+
+        <MudText Class="mt-6 mb-2">Выберите аудиофайл или запишите голос с микрофона</MudText>
+        <MudRadioGroup @bind-Value="@selectedOption">
+            <MudRadio Value="@("FILE")" Color="Color.Secondary">Файл</MudRadio>
+            <MudRadio Value="@("STREAM")" Color="Color.Secondary">Запись</MudRadio>
+        </MudRadioGroup>
+        @if (selectedOption == "FILE")
+        {
+            <MudFileUpload T="IBrowserFile" Accept=".mp3, .wav" FilesChanged="UploadFile">
+                <ButtonTemplate>
+                    <MudButton HtmlTag="label"
+                               Variant="Variant.Text"
+                               Color="Color.Secondary"
+                               StartIcon="@Icons.Material.Filled.AudioFile"
+                               for="@context.Id">
+                        @if (audioFile is null)
+                        {
+                            @(".mp3 .wav Аудиофайл")
+                        }
+                        else
+                        {
+                            @audioFile.Name
+                        }
+                    </MudButton>
+                </ButtonTemplate>
+            </MudFileUpload>
+        }
+        else if (selectedOption == "STREAM")
+        {
+            <MudIconButton Icon="@Icons.Material.Filled.PlayArrow" Color="Color.Secondary" OnClick="StartRecording" Disabled="@isRecording" Size="Size.Large"></MudIconButton>
+            <MudIconButton Icon="@Icons.Material.Filled.Stop" Color="Color.Secondary" OnClick="StopRecording" Disabled="@(!isRecording)" Size="Size.Large"></MudIconButton>
+            @if (isRecording)
+            {
+                <MudText Class="my-2" Color="Color.Error">Запись идет</MudText>
+            }
+            else if (audio is not null)
+            {
+                <MudText Class="my-2" Color="Color.Success">Запись готова к анализу</MudText>
+            }
+            else
+            {
+                <MudText Class="my-2">Для начала записи нажмите кнопку</MudText>
+            }
+        }
+
+        <MudButton Class="mt-6" Color="Color.Primary" Variant="Variant.Filled">Распознать</MudButton>
+    </MudItem>
+</MudGrid>
+
+@code
+{
+    public const int MaxCharactersInTextInput = 150;
+
+    private string selectedOption = "FILE";
+
+    private MudChip selectedVoice = new();
+    private IBrowserFile? audioFile;
+
+    private byte[]? audio;
+    private bool isRecording = false;
+
+    private async Task StartRecording()
+    {
+        isRecording = true;
+        await JS.InvokeVoidAsync("startRecording");
+    }
+
+    private async Task StopRecording()
+    {
+        isRecording = false;
+        audio = await JS.InvokeAsync<byte[]>("stopRecording");
+    }
+
+    private void UploadFile(IBrowserFile file)
+    {
+        if (file.Size > 1000 && (Path.GetExtension(file.Name) != ".mp3" || Path.GetExtension(file.Name) != ".wav"))
+        {
+            audioFile = file;
+        }
+        else
+        {
+            Snackbar.Add("Некорректный файл", Severity.Warning);
+        }
+    }
+
+    private IEnumerable<string> MaxCharacters(string ch)
+    {
+        if (!string.IsNullOrEmpty(ch) && MaxCharactersInTextInput < ch?.Length)
+            yield return $"Max {MaxCharactersInTextInput} characters";
+    }
+}

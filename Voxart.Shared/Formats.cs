@@ -7,11 +7,11 @@
 
     public enum VoiceCode
     {
-        Nec_24000,
+        Nec_24000, TEMP
     }
 
     public enum FileFormat
     {
-        Wav16, MP3, MP4
+        Wav16, MP3, MP4, TXT
     }
 }

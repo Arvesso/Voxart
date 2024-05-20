@@ -1,0 +1,50 @@
+﻿@implements IDisposable
+
+@inject NavigationManager NavigationManager
+
+<MudNavMenu >
+    <MudNavLink Href="" Match="NavLinkMatch.All" Icon="@Icons.Material.Filled.Home">Главная</MudNavLink>
+    <MudNavLink Href="speech" Match="NavLinkMatch.Prefix" Icon="@Icons.Material.Filled.VoiceChat">Речь</MudNavLink>
+    <MudNavLink Href="avatars" Match="NavLinkMatch.Prefix" Icon="@Icons.Material.Filled.SentimentNeutral">Аватар</MudNavLink>
+	<MudNavLink Href="gallery" Match="NavLinkMatch.Prefix" Icon="@Icons.Material.Filled.Dashboard">Галерея</MudNavLink>
+
+	<AuthorizeView>
+		<Authorized>
+			<MudNavLink Href="Account/Manage" Match="NavLinkMatch.Prefix" Icon="@Icons.Material.Filled.Person">@context.User.Identity?.Name</MudNavLink>  
+            <MudDivider Light="false" />
+            <div class="nav-item px-3">
+                <form action="Account/Logout" method="post">
+                    <AntiforgeryToken />
+                    <input type="hidden" name="ReturnUrl" value="@currentUrl" />
+                    <MudButton ButtonType="ButtonType.Submit" StartIcon="@Icons.Material.Filled.PersonRemove" FullWidth >Выход</MudButton>
+                </form>
+            </div>
+		</Authorized>
+		<NotAuthorized>
+			<MudNavLink Href="Account/Register" Match="NavLinkMatch.Prefix" Icon="@Icons.Material.Filled.PersonAddAlt1">Регистрация</MudNavLink>
+			<MudNavLink Href="Account/Login" Match="NavLinkMatch.Prefix" Icon="@Icons.Material.Filled.Login">Вход</MudNavLink>
+		</NotAuthorized>
+	</AuthorizeView>
+
+</MudNavMenu>
+
+@code {
+    private string? currentUrl;
+
+    protected override void OnInitialized()
+    {
+        currentUrl = NavigationManager.ToBaseRelativePath(NavigationManager.Uri);
+        NavigationManager.LocationChanged += OnLocationChanged;
+    }
+
+    private void OnLocationChanged(object? sender, LocationChangedEventArgs e)
+    {
+        currentUrl = NavigationManager.ToBaseRelativePath(e.Location);
+        StateHasChanged();
+    }
+
+    public void Dispose()
+    {
+        NavigationManager.LocationChanged -= OnLocationChanged;
+    }
+}

@@ -1,0 +1,113 @@
+﻿@page "/gallery"
+
+<PageTitle>Gallery</PageTitle>
+
+<MudGrid Spacing="10">
+    <MudItem xs="12">
+        <h2>Речь</h2>
+        <MudDataGrid Items="@audioFiles" Hover Class="backdrop-trans">
+            <Columns>
+                <PropertyColumn Property="x => x.Id" />
+                <PropertyColumn Property="x => x.Name" />
+                <PropertyColumn Property="x => x.CreationTime" Title="Years Employed" />
+                <TemplateColumn CellClass="d-flex justify-end">
+                    <CellTemplate>
+                        <MudStack Row>
+                            <MudButton Size="@Size.Small" Variant="@Variant.Filled" Color="@Color.Primary">Скачать</MudButton>
+                            <MudButton Size="@Size.Small" Variant="@Variant.Filled" Color="@Color.Primary">Прослушать</MudButton>
+                        </MudStack>
+                    </CellTemplate>
+                </TemplateColumn>
+            </Columns>
+        </MudDataGrid>
+    </MudItem>
+
+    <MudItem xs="12">
+        <h2>Аватары</h2>
+        <MudDataGrid Items="@videoFiles" Hover Class="backdrop-trans">
+            <Columns>
+                <PropertyColumn Property="x => x.Id" />
+                <PropertyColumn Property="x => x.Name" />
+                <PropertyColumn Property="x => x.CreationTime" Title="Years Employed" />
+                <TemplateColumn CellClass="d-flex justify-end">
+                    <CellTemplate>
+                        <MudStack Row>
+                            <MudButton Size="@Size.Small" Variant="@Variant.Filled" Color="@Color.Primary">Скачать</MudButton>
+                            <MudButton Size="@Size.Small" Variant="@Variant.Filled" Color="@Color.Primary">Прослушать</MudButton>
+                        </MudStack>
+                    </CellTemplate>
+                </TemplateColumn>
+            </Columns>
+        </MudDataGrid>
+    </MudItem>
+</MudGrid>
+
+@code {
+    private IEnumerable<ClusterFile> audioFiles;
+    private IEnumerable<ClusterFile> videoFiles;
+
+    protected override void OnInitialized()
+    {
+        audioFiles = new List<ClusterFile>()
+        {
+            new()
+            {
+                Id = 1,
+                CreationTime = DateTime.Now,
+                Name = "eihrhnbgiuhregbnt"
+            },
+            new()
+            {
+                Id = 1,
+                CreationTime = DateTime.Now,
+                Name = "eihrhnbgiuhregbnt"
+            },
+            new()
+            {
+                Id = 1,
+                CreationTime = DateTime.Now,
+                Name = "eihrhnbgiuhregbnt"
+            },
+            new()
+            {
+                Id = 1,
+                CreationTime = DateTime.Now,
+                Name = "eihrhnbgiuhregbnt"
+            },
+            new()
+            {
+                Id = 1,
+                CreationTime = DateTime.Now,
+                Name = "eihrhnbgiuhregbnt"
+            },
+        };
+
+        videoFiles = new List<ClusterFile>()
+        {
+            new()
+            {
+                Id = 1,
+                CreationTime = DateTime.Now,
+                Name = "eihrhnbgiuhregbnt"
+            },
+            new()
+            {
+                Id = 1,
+                CreationTime = DateTime.Now,
+                Name = "eihrhnbgiuhregbnt"
+            },
+            new()
+            {
+                Id = 1,
+                CreationTime = DateTime.Now,
+                Name = "eihrhnbgiuhregbnt"
+            },
+            new()
+            {
+                Id = 1,
+                CreationTime = DateTime.Now,
+                Name = "eihrhnbgiuhregbnt"
+            },
+        };
+    }
+}

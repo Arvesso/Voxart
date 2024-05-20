@@ -1,0 +1,88 @@
+﻿@page "/avatars"
+
+@inject ISnackbar Snackbar
+
+<PageTitle>Avatars</PageTitle>
+
+<MudGrid Spacing="10">
+    <MudItem xs="12" sm="6">
+        <h2>Создание нейроаватара</h2>
+        <MudText Class="mt-6 mb-2">Выберите голос озвучивания</MudText>
+        <MudChipSet @bind-SelectedChip="selectedVoice" Filter="true" Mandatory>
+            @foreach (var kv in Shared.VoiceValues)
+            {
+                <MudChip Text="@kv.Key" Color="Color.Secondary">@kv.Value</MudChip>
+            }
+        </MudChipSet>
+
+        <MudText Class="mt-4 mb-2">Введите текст для озвучивания</MudText>
+        <MudTextField T="string" Counter="@MaxCharactersInTextInput" MaxLength="@MaxCharactersInTextInput" Immediate="true" AutoGrow Validation="@(new Func<string, IEnumerable<string>>(MaxCharacters))" Label="Введите текст для озвучивания" Variant="Variant.Filled" />
+
+        <MudText Class="mt-2 mb-2">Загрузите фото для создания аватара</MudText>
+        <MudFileUpload T="IBrowserFile" Accept=".png, .jpg" FilesChanged="UploadFile">
+            <ButtonTemplate>
+                <MudButton HtmlTag="label"
+                           Variant="Variant.Text"
+                           Color="Color.Secondary"
+                           StartIcon="@Icons.Material.Filled.Image"
+                           for="@context.Id">
+                    @if (photo is null)
+                    {
+                        @(".png .jpg Фото")
+                    }
+                    else
+                    {
+                        @photo.Name
+                    }
+                </MudButton>
+            </ButtonTemplate>
+        </MudFileUpload>
+
+        <MudText Class="mt-4">Осталось генераций на сегодня: 3</MudText>
+
+        <MudButton Class="mt-6" Color="Color.Primary" Variant="Variant.Filled">Создать аватар</MudButton>
+    </MudItem>
+    <MudItem xs="12" sm="6">
+        <h2>Инструкция</h2>
+        <MudText Class="mt-6 mb-2">
+            Для генерации реалистичного аватара вам необходимо
+        </MudText>
+        <MudText>
+            1. Выбрать голос озвучивания
+        </MudText>
+        <MudText>
+            2. Написать текст, который будет говорить ваш аватар
+        </MudText>
+        <MudText>
+            3. Загрузить вашу фотографию
+        </MudText>
+        <MudText Class="mt-4" Color="Color.Warning">
+            При выборе фотографии старайтесь использовать фото с наилучшим качеством и в высоком разрешении. Если таких нет, сделайте селфи на фронтальную камеру. Самым главным элементом фото является ваше лицо, если его не будет видно или будет видно плохо - генерация может завершиться неудачей или будет в плохом качестве. Рекомендуем заранее сделать несколько четких фотография себя по уровень плеч, это даст наилучший результат.
+        </MudText>
+    </MudItem>
+</MudGrid>
+
+@code {
+    public const int MaxCharactersInTextInput = 100;
+
+    private MudChip selectedVoice = new();
+    private IBrowserFile? photo;
+
+    private void UploadFile(IBrowserFile file)
+    {
+        if (file.Size > 1000 && (Path.GetExtension(file.Name) == ".png" || Path.GetExtension(file.Name) == ".jpg"))
+        {
+            photo = file;
+        }
+        else
+        {
+            Snackbar.Add("Некорректный файл", Severity.Warning);
+        }
+    }
+
+    private IEnumerable<string> MaxCharacters(string ch)
+    {
+        if (!string.IsNullOrEmpty(ch) && MaxCharactersInTextInput < ch?.Length)
+            yield return $"Max {MaxCharactersInTextInput} characters";
+    }
+}
