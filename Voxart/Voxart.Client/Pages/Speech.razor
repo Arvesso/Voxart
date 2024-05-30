@@ -1,7 +1,10 @@
 ﻿@page "/speech"
 
+@attribute [Authorize]
+
 @inject ISnackbar Snackbar
 @inject IJSRuntime JS
+@inject ApiInterop Api
 
 <PageTitle>Speech</PageTitle>
 
@@ -17,9 +20,9 @@
         </MudChipSet>
 
         <MudText Class="mt-4 mb-2">Введите текст для озвучивания</MudText>
-        <MudTextField T="string" Counter="@MaxCharactersInTextInput" MaxLength="@MaxCharactersInTextInput" Immediate="true" AutoGrow Validation="@(new Func<string, IEnumerable<string>>(MaxCharacters))" Label="Введите текст для озвучивания" Variant="Variant.Filled" />
+        <MudTextField @bind-Value="SynthText" T="string" Counter="@MaxCharactersInTextInput" MaxLength="@MaxCharactersInTextInput" Immediate="true" AutoGrow Validation="@(new Func<string, IEnumerable<string>>(MaxCharacters))" Label="Введите текст для озвучивания" Variant="Variant.Filled" />
 
-        <MudButton Class="mt-4" Color="Color.Primary" Variant="Variant.Filled">Синтезировать</MudButton>
+        <MudButton Class="mt-4" Color="Color.Primary" Variant="Variant.Filled" OnClick="Synthesize">Синтезировать</MudButton>
     </MudItem>
 
     <MudItem xs="12" sm="6">
@@ -84,6 +87,25 @@
 
     private byte[]? audio;
     private bool isRecording = false;
+
+    private string SynthText = string.Empty;
+
+    private async Task Synthesize()
+    {
+        if (string.IsNullOrEmpty(selectedVoice.Text))
+        {
+            Snackbar.Add("Не выбран голос", Severity.Warning);
+            return;
+        }
+        if (SynthText.Length < 10)
+        {
+            Snackbar.Add("Слишком мало текста", Severity.Warning);
+            return;
+        }
+
+        var voice = Help.GetVoiceCode(selectedVoice.Text);
+        // var result = await Api.Synthesize(SynthText, voice);
+    }
 
     private async Task StartRecording()
     {

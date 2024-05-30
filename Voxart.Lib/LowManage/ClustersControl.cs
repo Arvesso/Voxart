@@ -25,6 +25,31 @@ namespace Voxart.Lib.LowManage
             else return null;
         }
 
+        public static FileInfo? GetFile(string cluster, string file)
+        {
+            var detectedCluster = GetCluster(cluster);
+
+            if (detectedCluster is not null)
+            {
+                var directory = detectedCluster.FullName;
+                var files = Directory.GetFiles(directory);
+
+                foreach (var filePath in files)
+                {
+                    if (Path.GetFileNameWithoutExtension(filePath).Equals(file, StringComparison.OrdinalIgnoreCase))
+                    {
+                        return new FileInfo(filePath);
+                    }
+                    else if (Path.GetFileName(filePath).Equals(file, StringComparison.OrdinalIgnoreCase))
+                    {
+                        return new FileInfo(filePath);
+                    }
+                }
+            }
+
+            return null;
+        }
+
         public static bool ClusterExists(string cluster)
         {
             return Directory.Exists(Path.Combine(_clusters.FullName, cluster));

@@ -1,0 +1,178 @@
+﻿@page "/avatars"
+
+@inject ISnackbar Snackbar
+@inject ApiInterop Api
+@inject BrowserStorage Storage
+
+<PageTitle>Avatars</PageTitle>
+
+<MudGrid Spacing="10">
+    <MudItem xs="12" sm="6">
+        <h2>Инструкция</h2>
+        <MudText Class="mt-6 mb-2">
+            Для генерации реалистичного аватара вам необходимо
+        </MudText>
+        <MudText>
+            1. Выбрать голос озвучивания
+        </MudText>
+        <MudText>
+            2. Написать текст, который будет говорить ваш аватар
+        </MudText>
+        <MudText>
+            3. Загрузить вашу фотографию
+        </MudText>
+        <MudText Class="mt-4" Color="Color.Warning">
+            При выборе фотографии старайтесь использовать фото с наилучшим качеством и в высоком разрешении. Если таких нет, сделайте селфи на фронтальную камеру. Самым главным элементом фото является ваше лицо, если его не будет видно или будет видно плохо - генерация может завершиться неудачей или будет в плохом качестве. Рекомендуем заранее сделать несколько четких фотография себя по уровень плеч, это даст наилучший результат.
+        </MudText>
+    </MudItem>
+    <MudItem xs="12" sm="6">
+        <h2>Создание нейроаватара</h2>
+        <MudText Class="mt-6 mb-2">Выберите голос озвучивания</MudText>
+        <MudChipSet @bind-SelectedChip="selectedVoice" Filter="true" Mandatory>
+            @foreach (var kv in VoiceValues.Voices)
+            {
+                <MudChip Text="@kv.Key" Color="Color.Secondary">@kv.Value</MudChip>
+            }
+        </MudChipSet>
+
+        <MudText Class="mt-4 mb-2">Введите текст для озвучивания</MudText>
+        <MudTextField @bind-Value="SynthText" T="string" Counter="@MaxCharactersInTextInput" MaxLength="@MaxCharactersInTextInput" Immediate="true" AutoGrow Validation="@(new Func<string, IEnumerable<string>>(MaxCharacters))" Label="Введите текст для озвучивания" Variant="Variant.Filled" />
+
+        <MudText Class="mt-2 mb-2">Загрузите фото для создания аватара</MudText>
+        <MudFileUpload T="IBrowserFile" Accept=".png, .jpg" FilesChanged="UploadFile">
+            <ButtonTemplate>
+                <MudButton HtmlTag="label"
+                           Variant="Variant.Text"
+                           Color="Color.Secondary"
+                           StartIcon="@Icons.Material.Filled.Image"
+                           for="@context.Id">
+                    @if (imageFile is null)
+                    {
+                        @(".png .jpg Фото")
+                    }
+                    else
+                    {
+                        @imageFile.Name
+                    }
+                </MudButton>
+            </ButtonTemplate>
+        </MudFileUpload>
+
+        @* <MudText Class="mt-4">Осталось генераций на сегодня: 3</MudText> *@
+
+        @if (generationFinished)
+        {
+            <MudButton Class="mt-4" Color="Color.Primary" Variant="Variant.Filled" Href="@avatarResultLink" Target="_blank">Посмотреть</MudButton>
+            <MudIconButton Class="mt-4 ml-2" Icon="@Icons.Material.Filled.Clear" OnClick="ClearAvatar" Color="Color.Secondary" Size="Size.Large"></MudIconButton>
+        }
+        else
+        {
+            <MudButton Disabled="generationProcess" Class="mt-6" Color="Color.Primary" Variant="Variant.Filled" OnClick="CreateAvatar">
+                @if (generationProcess)
+                {
+                    <MudProgressCircular Class="ms-n1" Size="Size.Small" Indeterminate="true" />
+                    <MudText Class="ms-2">Создание</MudText>
+                }
+                else
+                {
+                    <MudText>Создать аватар</MudText>
+                }
+            </MudButton>
+        }
+    </MudItem>
+</MudGrid>
+
+@code {
+    public const int MaxCharactersInTextInput = 100;
+    private const double MaxFileSizeBytes = 2e+7;
+
+    private MudChip selectedVoice = new();
+    private IBrowserFile? imageFile;
+
+    private string SynthText = string.Empty;
+
+    private byte[]? image;
+
+    private bool generationFinished = false;
+    private bool generationProcess = false;
+
+    private string avatarResultLink = string.Empty;
+
+    private async Task CreateAvatar()
+    {
+        if (string.IsNullOrEmpty(selectedVoice.Text))
+        {
+            Snackbar.Add("Не выбран голос", Severity.Warning);
+            return;
+        }
+        if (SynthText.Length < 10)
+        {
+            Snackbar.Add("Слишком мало текста", Severity.Warning);
+            return;
+        }
+        if (image is null || image.Length < 1000)
+        {
+            Snackbar.Add("Некорректное изображение", Severity.Warning);
+            return;
+        }
+
+        var client = await Storage.GetKey(BrowserStorage.Keys.KeyClient);
+
+        if (client is null)
+        {
+            Snackbar.Add("Доступ запрещен", Severity.Warning);
+            return;
+        }
+
+        generationProcess = true;
+
+        StateHasChanged();
+
+        var voice = Help.GetVoiceCode(selectedVoice.Text);
+        var result = await Api.Avatar(client, SynthText, voice, image);
+
+        if (result is null || !result.IsSuccess || result.ErrorCode != ErrorCode.NoError)
+        {
+            Snackbar.Add("При генерации произошла ошибка, повторите попытку", Severity.Error);
+        }
+        else
+        {
+            avatarResultLink = Program.BaseAddress + result.ResultLink!;
+            generationFinished = true;
+        }
+
+        generationProcess = false;
+
+        StateHasChanged();
+    }
+
+    private void ClearAvatar()
+    {
+        imageFile = null;
+        image = null;
+        avatarResultLink = string.Empty;
+        generationFinished = false;
+    }
+
+    private async Task UploadFile(IBrowserFile file)
+    {
+        if (file.Size > 1000 && (Path.GetExtension(file.Name) == ".png" || Path.GetExtension(file.Name) == ".jpg"))
+        {
+            using var memoryStream = new MemoryStream();
+            await file.OpenReadStream(Convert.ToInt64(MaxFileSizeBytes)).CopyToAsync(memoryStream);
+            image = memoryStream.ToArray();
+
+            imageFile = file;
+        }
+        else
+        {
+            Snackbar.Add("Некорректный файл", Severity.Warning);
+        }
+    }
+
+    private IEnumerable<string> MaxCharacters(string ch)
+    {
+        if (!string.IsNullOrEmpty(ch) && MaxCharactersInTextInput < ch?.Length)
+            yield return $"Max {MaxCharactersInTextInput} characters";
+    }
+}

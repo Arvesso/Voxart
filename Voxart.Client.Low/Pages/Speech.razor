@@ -1,0 +1,268 @@
+﻿@page "/speech"
+
+@inject ISnackbar Snackbar
+@inject IJSRuntime JS
+@inject ApiInterop Api
+@inject BrowserStorage Storage
+
+<PageTitle>Speech</PageTitle>
+
+<MudGrid Spacing="10">
+    <MudItem xs="12" sm="6">
+        <h2>Синтез</h2>
+        <MudText Class="mt-6 mb-2">Выберите голос озвучивания</MudText>
+        <MudChipSet @bind-SelectedChip="selectedVoice" Filter="true" Mandatory>
+            @foreach (var kv in VoiceValues.Voices)
+            {
+                <MudChip Text="@kv.Key" Color="Color.Secondary">@kv.Value</MudChip>
+            }
+        </MudChipSet>
+
+        <MudText Class="mt-4 mb-2">Введите текст для озвучивания</MudText>
+        <MudTextField @bind-Value="SynthText" T="string" Counter="@MaxCharactersInTextInput" MaxLength="@MaxCharactersInTextInput" Immediate="true" AutoGrow Validation="@(new Func<string, IEnumerable<string>>(MaxCharacters))" Label="Введите текст для озвучивания" Variant="Variant.Filled" />
+
+        @if (synthFinished)
+        {
+            <MudButton Class="mt-4" Color="Color.Primary" Variant="Variant.Filled" Href="@synthResultLink" Target="_blank">Прослушать</MudButton>
+            <MudIconButton Class="mt-4 ml-2" Icon="@Icons.Material.Filled.Clear" OnClick="ClearSynthResult" Color="Color.Secondary" Size="Size.Large"></MudIconButton>
+        }
+        else
+        {
+            <MudButton Disabled="synthProcess || recognizeProcess || recordProcess" Class="mt-4" Color="Color.Primary" Variant="Variant.Filled" OnClick="Synthesize">
+                @if (synthProcess)
+                {
+                    <MudProgressCircular Class="ms-n1" Size="Size.Small" Indeterminate="true" />
+                    <MudText Class="ms-2">Синтез</MudText>
+                }
+                else
+                {
+                    <MudText>Синтезировать</MudText>
+                }
+            </MudButton>
+        }
+    </MudItem>
+
+    <MudItem xs="12" sm="6">
+        <h2>Распознавание</h2>
+
+        <MudText Class="mt-6 mb-2">Выберите аудиофайл или запишите голос с микрофона</MudText>
+        <MudRadioGroup @bind-Value="@selectedOption">
+            <MudRadio Value="@("FILE")" Color="Color.Secondary">Файл</MudRadio>
+            <MudRadio Value="@("STREAM")" Color="Color.Secondary">Запись</MudRadio>
+        </MudRadioGroup>
+        @if (selectedOption == "FILE")
+        {
+            <MudFileUpload T="IBrowserFile" Accept=".mp3" FilesChanged="UploadFile">
+                <ButtonTemplate>
+                    <MudButton HtmlTag="label"
+                               Variant="Variant.Text"
+                               Color="Color.Secondary"
+                               StartIcon="@Icons.Material.Filled.AudioFile"
+                               for="@context.Id">
+                        @if (audioFile is null)
+                        {
+                            @(".mp3 Аудиофайл")
+                        }
+                        else
+                        {
+                            @audioFile.Name
+                        }
+                    </MudButton>
+                </ButtonTemplate>
+            </MudFileUpload>
+        }
+        else if (selectedOption == "STREAM")
+        {
+            <MudIconButton Icon="@Icons.Material.Filled.PlayArrow" Color="Color.Secondary" OnClick="StartRecording" Disabled="@recordProcess" Size="Size.Large"></MudIconButton>
+            <MudIconButton Icon="@Icons.Material.Filled.Stop" Color="Color.Secondary" OnClick="StopRecording" Disabled="@(!recordProcess)" Size="Size.Large"></MudIconButton>
+            @if (recordProcess)
+            {
+                <MudText Class="my-2" Color="Color.Error">Запись идет</MudText>
+            }
+            else if (audio is not null)
+            {
+                <MudText Class="my-2" Color="Color.Success">Запись готова к анализу</MudText>
+            }
+            else
+            {
+                <MudText Class="my-2">Для начала записи нажмите кнопку</MudText>
+            }
+        }
+
+        @if (recognizeFinished)
+        {
+            <MudButton Class="mt-4" Color="Color.Primary" Variant="Variant.Filled" Href="@recognizeResultLink" Target="_blank">Посмотреть</MudButton>
+            <MudIconButton Class="mt-4 ml-2" Icon="@Icons.Material.Filled.Clear" OnClick="ClearRecognizeResult" Color="Color.Secondary" Size="Size.Large"></MudIconButton>
+        }
+        else
+        {
+            <MudButton Disabled="synthProcess || recognizeProcess || recordProcess" Class="mt-6" Color="Color.Primary" Variant="Variant.Filled" OnClick="Recognize">
+                @if (recognizeProcess)
+                {
+                    <MudProgressCircular Class="ms-n1" Size="Size.Small" Indeterminate="true" />
+                    <MudText Class="ms-2">Распознавание</MudText>
+                }
+                else
+                {
+                    <MudText>Распознать</MudText>
+                }
+            </MudButton>
+        }
+    </MudItem>
+</MudGrid>
+
+@code
+{
+    private const int MaxCharactersInTextInput = 150;
+    private const double MaxFileSizeBytes = 2e+7;
+
+    private string selectedOption = "FILE";
+
+    private MudChip selectedVoice = new();
+    private IBrowserFile? audioFile;
+    private AudioFormat audioFormat;
+
+    private byte[]? audio;
+
+    private string SynthText = string.Empty;
+
+    private bool synthProcess = false;
+    private bool recognizeProcess = false;
+    private bool recordProcess = false;
+
+    private bool synthFinished = false;
+    private bool recognizeFinished = false;
+
+    private string synthResultLink = string.Empty;
+    private string recognizeResultLink = string.Empty;
+
+    private async Task Synthesize()
+    {
+        if (string.IsNullOrEmpty(selectedVoice.Text))
+        {
+            Snackbar.Add("Не выбран голос", Severity.Warning);
+            return;
+        }
+        if (SynthText.Length < 10)
+        {
+            Snackbar.Add("Слишком мало текста", Severity.Warning);
+            return;
+        }
+
+        var client = await Storage.GetKey(BrowserStorage.Keys.KeyClient);
+
+        if (client is null)
+        {
+            Snackbar.Add("Доступ запрещен", Severity.Warning);
+            return;
+        }
+
+        synthProcess = true;
+
+        StateHasChanged();
+
+        var voice = Help.GetVoiceCode(selectedVoice.Text);
+        var result = await Api.Synthesize(client, SynthText, voice);
+
+        if (result is null || !result.IsSuccess || result.ErrorCode != ErrorCode.NoError)
+        {
+            Snackbar.Add("При генерации произошла ошибка, повторите попытку", Severity.Error);
+        }
+        else
+        {
+            synthResultLink = Program.BaseAddress + result.ResultLink!;
+            synthFinished = true;
+        }
+
+        synthProcess = false;
+
+        StateHasChanged();
+    }
+
+    private async Task Recognize()
+    {
+        if (audio is null || audio.Length < 1000)
+        {
+            Snackbar.Add("Некорректный аудиофайл", Severity.Warning);
+            return;
+        }
+
+        var client = await Storage.GetKey(BrowserStorage.Keys.KeyClient);
+
+        if (client is null)
+        {
+            Snackbar.Add("Доступ запрещен", Severity.Warning);
+            return;
+        }
+
+        recognizeProcess = true;
+
+        StateHasChanged();
+
+        var result = await Api.Recognize(client, audio, audioFormat);
+
+        if (result is null || !result.IsSuccess || result.ErrorCode != ErrorCode.NoError)
+        {
+            Snackbar.Add("При распознавании произошла ошибка, повторите попытку", Severity.Error);
+        }
+        else
+        {
+            recognizeResultLink = Program.BaseAddress + result.ResultLink!;
+            recognizeFinished = true;
+        }
+
+        recognizeProcess = false;
+
+        StateHasChanged();
+    }
+
+    private void ClearSynthResult()
+    {
+        synthFinished = false;
+        synthResultLink = string.Empty;
+    }
+
+    private void ClearRecognizeResult()
+    {
+        audioFile = null;
+        audio = null;
+        recognizeFinished = false;
+        recognizeResultLink = string.Empty;
+    }
+
+    private async Task StartRecording()
+    {
+        recordProcess = true;
+        await JS.InvokeVoidAsync("startRecording");
+    }
+
+    private async Task StopRecording()
+    {
+        recordProcess = false;
+        audio = await JS.InvokeAsync<byte[]>("stopRecording");
+        audioFormat = AudioFormat.wav16;
+    }
+
+    private async Task UploadFile(IBrowserFile file)
+    {
+        if (file.Size > 1000 && Path.GetExtension(file.Name) == ".mp3")
+        {
+            audioFile = file;
+
+            using var memoryStream = new MemoryStream();
+            await file.OpenReadStream(Convert.ToInt64(MaxFileSizeBytes)).CopyToAsync(memoryStream);
+            audio = memoryStream.ToArray();
+            audioFormat = AudioFormat.mpeg3;
+        }
+        else
+        {
+            Snackbar.Add("Некорректный файл", Severity.Warning);
+        }
+    }
+
+    private IEnumerable<string> MaxCharacters(string ch)
+    {
+        if (!string.IsNullOrEmpty(ch) && MaxCharactersInTextInput < ch?.Length)
+            yield return $"Max {MaxCharactersInTextInput} characters";
+    }
+}

@@ -1,13 +1,20 @@
-﻿using Microsoft.AspNetCore.Mvc;
+﻿using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Mvc;
+using Voxart.Lib.LowManage;
 
 namespace Voxart.Controllers
 {
     [Route("/clusters")]
+    [Authorize]
     public class ClustersController : Controller
     {
-        public string Index()
+        [HttpGet("{clusterId}/{fileId}")]
+        public ActionResult GetFile(string clusterId, string fileId)
         {
-            return "View()";
+            var file = ClustersControl.GetFile(clusterId, fileId);
+            var content = System.IO.File.ReadAllBytes(file!.FullName);
+
+            return File(content, "audio/wav");
         }
     }
 }

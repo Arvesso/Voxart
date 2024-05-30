@@ -10,5 +10,10 @@
             public const string Synthesize = VoiceApi + "text:synthesize";
             public const string Recognize = VoiceApi + "speech:recognize";
         }
+
+        public static class Did
+        {
+            public const string Talks = "https://api.d-id.com/talks";
+        }
     }
 }

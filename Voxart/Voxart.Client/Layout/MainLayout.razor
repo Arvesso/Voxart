@@ -12,9 +12,16 @@
         <MudSpacer />
         <MudIconButton Icon="@Icons.Material.Filled.MoreVert" Color="Color.Inherit" Edge="Edge.End" />
     </MudAppBar>
-    <MudDrawer @bind-Open="_drawerOpen" ClipMode="DrawerClipMode.Always" Elevation="8" Color="Color.Transparent" Variant="DrawerVariant.Responsive">
-        <NavMenu />
-    </MudDrawer>
+    <MudHidden Breakpoint="Breakpoint.MdAndUp" Invert>
+        <MudDrawer @bind-Open="_drawerOpen" ClipMode="DrawerClipMode.Always" Elevation="8" Color="Color.Transparent" Variant="DrawerVariant.Responsive">
+            <NavMenu />
+        </MudDrawer>
+    </MudHidden>
+    <MudHidden Breakpoint="Breakpoint.SmAndDown" Invert>
+        <MudDrawer @bind-Open="_drawerOpen" ClipMode="DrawerClipMode.Always" Elevation="8" Color="Color.Dark" Variant="DrawerVariant.Responsive">
+            <NavMenu />
+        </MudDrawer>
+    </MudHidden>
     <MudMainContent Class="mt-16 pa-4">
         <MudContainer MaxWidth="MaxWidth.Large">
             @Body

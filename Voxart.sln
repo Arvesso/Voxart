@@ -7,9 +7,17 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Voxart.Lib", "Voxart.Lib\Vo
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Voxart.Shared", "Voxart.Shared\Voxart.Shared.csproj", "{C7DC98C0-849E-4941-9305-E7F10C21513F}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Voxart", "Voxart\Voxart\Voxart.csproj", "{927E4509-528C-4169-B943-417682A7180E}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Voxart", "Voxart\Voxart\Voxart.csproj", "{927E4509-528C-4169-B943-417682A7180E}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Voxart.Client", "Voxart\Voxart.Client\Voxart.Client.csproj", "{71445B7B-25F2-4929-B8EB-99C15CEAB71F}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Voxart.Client", "Voxart\Voxart.Client\Voxart.Client.csproj", "{71445B7B-25F2-4929-B8EB-99C15CEAB71F}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Voxart.NA", "Voxart.NA", "{55AA489F-CABE-4F34-88C5-B9A154CB4FDD}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Voxart.A", "Voxart.A", "{F103F222-BB3F-464F-8A8B-8732878C0D9C}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Voxart.Server.Low", "Voxart.Server.Low\Voxart.Server.Low.csproj", "{AC8102AA-F13D-4547-87BC-8B751EB1892C}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Voxart.Client.Low", "Voxart.Client.Low\Voxart.Client.Low.csproj", "{A76DDC2E-3AE8-4F49-B44F-C517D02E10AB}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -33,9 +41,23 @@ Global
 		{71445B7B-25F2-4929-B8EB-99C15CEAB71F}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{71445B7B-25F2-4929-B8EB-99C15CEAB71F}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{71445B7B-25F2-4929-B8EB-99C15CEAB71F}.Release|Any CPU.Build.0 = Release|Any CPU
+		{AC8102AA-F13D-4547-87BC-8B751EB1892C}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{AC8102AA-F13D-4547-87BC-8B751EB1892C}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{AC8102AA-F13D-4547-87BC-8B751EB1892C}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{AC8102AA-F13D-4547-87BC-8B751EB1892C}.Release|Any CPU.Build.0 = Release|Any CPU
+		{A76DDC2E-3AE8-4F49-B44F-C517D02E10AB}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{A76DDC2E-3AE8-4F49-B44F-C517D02E10AB}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{A76DDC2E-3AE8-4F49-B44F-C517D02E10AB}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{A76DDC2E-3AE8-4F49-B44F-C517D02E10AB}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(NestedProjects) = preSolution
+		{927E4509-528C-4169-B943-417682A7180E} = {F103F222-BB3F-464F-8A8B-8732878C0D9C}
+		{71445B7B-25F2-4929-B8EB-99C15CEAB71F} = {F103F222-BB3F-464F-8A8B-8732878C0D9C}
+		{AC8102AA-F13D-4547-87BC-8B751EB1892C} = {55AA489F-CABE-4F34-88C5-B9A154CB4FDD}
+		{A76DDC2E-3AE8-4F49-B44F-C517D02E10AB} = {55AA489F-CABE-4F34-88C5-B9A154CB4FDD}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {3A983DC6-69FD-46FD-8B27-4BC4DE2CA5D5}

@@ -10,7 +10,7 @@ namespace Voxart.Lib.LowManage
 
         static LocalDirectory()
         {
-            _appData = Directory.CreateDirectory("AppData");
+            _appData = Directory.CreateDirectory("wwwroot/AppData");
         }
 
         public static DirectoryInfo AddDirectory(string name)
