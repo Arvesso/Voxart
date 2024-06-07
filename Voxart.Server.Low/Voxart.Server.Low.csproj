@@ -1,4 +1,4 @@
-<Project Sdk="Microsoft.NET.Sdk.Web">
+﻿<Project Sdk="Microsoft.NET.Sdk.Web">
 
   <PropertyGroup>
     <TargetFramework>net8.0</TargetFramework>
@@ -31,7 +31,12 @@
   </ItemGroup>
 
   <ItemGroup>
-    <None Update="C:\Users\artem\.nuget\packages\naudio.lame\2.1.0\build\libmp3lame.32.dll" Link="AppData\libmp3lame.32.dll" />
+    <None Update="C:\Users\artem\.nuget\packages\naudio.lame\2.1.0\build\libmp3lame.32.dll" Link="AppData\libmp3lame.32.dll">
+      <CopyToOutputDirectory>Never</CopyToOutputDirectory>
+    </None>
+    <None Update="libmp3lame.64.dll.so">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
   </ItemGroup>
 
 </Project>
