@@ -2,9 +2,9 @@
 {
     public class SharedClusterFile
     {
-        public string ClusterId { get; set; } = string.Empty;
         public string Name { get; set; } = string.Empty;
-        public FileFormat FileFormat { get; set; }
+        public string Template { get; set; } = string.Empty;
+        public string Link { get; set; } = string.Empty;
         public DateTime CreationTime { get; set; }
     }
 

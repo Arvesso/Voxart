@@ -1,5 +1,9 @@
 ﻿@page "/gallery"
 
+@inject ISnackbar Snackbar
+@inject ApiInterop Api
+@inject BrowserStorage Storage
+
 <PageTitle>Gallery</PageTitle>
 
 <MudGrid Spacing="10">
@@ -7,14 +11,12 @@
         <h2>Речь</h2>
         <MudDataGrid Items="@audioFiles" Hover Class="backdrop-trans">
             <Columns>
-                <PropertyColumn Property="x => x.Name" />
-                <PropertyColumn Property="x => x.Name" />
-                <PropertyColumn Property="x => x.CreationTime" Title="Years Employed" />
+                <PropertyColumn Property="x => x.Template" Title="Файл" />
+                <PropertyColumn Property="x => x.CreationTime" Title="Создан" />
                 <TemplateColumn CellClass="d-flex justify-end">
                     <CellTemplate>
                         <MudStack Row>
-                            <MudButton Size="@Size.Small" Variant="@Variant.Filled" Color="@Color.Primary">Скачать</MudButton>
-                            <MudButton Size="@Size.Small" Variant="@Variant.Filled" Color="@Color.Primary">Прослушать</MudButton>
+                            <MudButton Href="@context.Item.Link" Target="_blank" Size="@Size.Small" Variant="@Variant.Filled" Color="@Color.Primary">Посмотреть</MudButton>
                         </MudStack>
                     </CellTemplate>
                 </TemplateColumn>
@@ -26,14 +28,12 @@
         <h2>Аватары</h2>
         <MudDataGrid Items="@videoFiles" Hover Class="backdrop-trans">
             <Columns>
-                <PropertyColumn Property="x => x.Name" />
-                <PropertyColumn Property="x => x.Name" />
-                <PropertyColumn Property="x => x.CreationTime" Title="Years Employed" />
+                <PropertyColumn Property="x => x.Template" Title="Файл" />
+                <PropertyColumn Property="x => x.CreationTime" Title="Создан" />
                 <TemplateColumn CellClass="d-flex justify-end">
                     <CellTemplate>
                         <MudStack Row>
-                            <MudButton Size="@Size.Small" Variant="@Variant.Filled" Color="@Color.Primary">Скачать</MudButton>
-                            <MudButton Size="@Size.Small" Variant="@Variant.Filled" Color="@Color.Primary">Прослушать</MudButton>
+                            <MudButton Href="@context.Item.Link" Target="_blank" Size="@Size.Small" Variant="@Variant.Filled" Color="@Color.Primary">Посмотреть</MudButton>
                         </MudStack>
                     </CellTemplate>
                 </TemplateColumn>
@@ -43,62 +43,39 @@
 </MudGrid>
 
 @code {
-    private IEnumerable<SharedClusterFile> audioFiles;
-    private IEnumerable<SharedClusterFile> videoFiles;
+    private IEnumerable<SharedClusterFile>? audioFiles;
+    private IEnumerable<SharedClusterFile>? videoFiles;
 
-    protected override void OnInitialized()
+    protected override async Task OnInitializedAsync()
     {
-        audioFiles = new List<SharedClusterFile>()
-        {
-            new()
-            {
-                CreationTime = DateTime.Now,
-                Name = "eihrhnbgiuhregbnt"
-            },
-            new()
-            {
-                CreationTime = DateTime.Now,
-                Name = "eihrhnbgiuhregbnt"
-            },
-            new()
-            {
-                CreationTime = DateTime.Now,
-                Name = "eihrhnbgiuhregbnt"
-            },
-            new()
-            {
-                CreationTime = DateTime.Now,
-                Name = "eihrhnbgiuhregbnt"
-            },
-            new()
-            {
-                CreationTime = DateTime.Now,
-                Name = "eihrhnbgiuhregbnt"
-            },
-        };
+        var client = await Storage.GetKey(BrowserStorage.Keys.KeyClient);
 
-        videoFiles = new List<SharedClusterFile>()
+        if (client is null)
         {
-            new()
-            {
-                CreationTime = DateTime.Now,
-                Name = "eihrhnbgiuhregbnt"
-            },
-            new()
-            {
-                CreationTime = DateTime.Now,
-                Name = "eihrhnbgiuhregbnt"
-            },
-            new()
-            {
-                CreationTime = DateTime.Now,
-                Name = "eihrhnbgiuhregbnt"
-            },
-            new()
-            {
-                CreationTime = DateTime.Now,
-                Name = "eihrhnbgiuhregbnt"
-            },
-        };
+            Snackbar.Add("Доступ запрещен", Severity.Warning);
+            return;
+        }
+
+        var audios = await Api.GetAudios(client);
+
+        if (audios is null || !audios.IsSuccess || audios.ErrorCode != ErrorCode.NoError)
+        {
+            Snackbar.Add("Ошибка при попытке получить данные", Severity.Error);
+        }
+        else
+        {
+            audioFiles = audios.ClusterFiles;
+        }
+
+        var videos = await Api.GetVideos(client);
+
+        if (videos is null || !videos.IsSuccess || videos.ErrorCode != ErrorCode.NoError)
+        {
+            Snackbar.Add("Ошибка при попытке получить данные", Severity.Error);
+        }
+        else
+        {
+            videoFiles = videos.ClusterFiles;
+        }
     }
 }

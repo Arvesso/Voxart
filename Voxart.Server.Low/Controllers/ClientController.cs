@@ -159,5 +159,65 @@ namespace Voxart.Server.Low.Controllers
                 return new() { IsSuccess = false, ErrorCode = ErrorCode.FailedGeneration };
             }
         }
+
+        [HttpPost("audios")]
+        public ClusterFilesResponse ClusterFilesAudios([FromBody] ClusterFilesRequest request)
+        {
+            var dbFiles = db.ClusterFiles.Where(f => f.ClusterId.Contains(request.ClientId) && f.FileFormat == FileFormat.Wav16);
+            var cluster = ClustersControl.GetCluster(request.ClientId);
+
+            if (cluster is null)
+                return new() { IsSuccess = false, ErrorCode = ErrorCode.Unknown, ClusterFiles = null! };
+
+            var files = new List<SharedClusterFile>();
+
+            foreach (var file in dbFiles)
+            {
+                files.Add(new()
+                {
+                    Name = file.Name,
+                    Template = "Аудио",
+                    CreationTime = file.CreationTime,
+                    Link = $"clusters/audio/{cluster.Name}/{file.Name}"
+                });
+            }
+
+            return new()
+            {
+                IsSuccess = true,
+                ErrorCode = ErrorCode.NoError,
+                ClusterFiles = files
+            };
+        }
+
+        [HttpPost("videos")]
+        public ClusterFilesResponse ClusterFilesVideos([FromBody] ClusterFilesRequest request)
+        {
+            var dbFiles = db.ClusterFiles.Where(f => f.ClusterId.Contains(request.ClientId) && f.FileFormat == FileFormat.MP4);
+            var cluster = ClustersControl.GetCluster(request.ClientId);
+
+            if (cluster is null)
+                return new() { IsSuccess = false, ErrorCode = ErrorCode.Unknown, ClusterFiles = null! };
+
+            var files = new List<SharedClusterFile>();
+
+            foreach (var file in dbFiles)
+            {
+                files.Add(new()
+                {
+                    Name = file.Name,
+                    Template = "Видео",
+                    CreationTime = file.CreationTime,
+                    Link = $"clusters/video/{cluster.Name}/{file.Name}"
+                });
+            }
+
+            return new()
+            {
+                IsSuccess = true,
+                ErrorCode = ErrorCode.NoError,
+                ClusterFiles = files
+            };
+        }
     }
 }

@@ -23,6 +23,18 @@ namespace Voxart.Client.Low.Processing
             return await ProcessRequest<RecognizeResponse, RecognizeRequest>(Endpoints.Recognize, request);
         }
 
+        public async Task<ClusterFilesResponse?> GetAudios(string client)
+        {
+            var request = new ClusterFilesRequest() { ClientId = client };
+            return await ProcessRequest<ClusterFilesResponse, ClusterFilesRequest>(Endpoints.Audios, request);
+        }
+
+        public async Task<ClusterFilesResponse?> GetVideos(string client)
+        {
+            var request = new ClusterFilesRequest() { ClientId = client };
+            return await ProcessRequest<ClusterFilesResponse, ClusterFilesRequest>(Endpoints.Videos, request);
+        }
+
         public async Task<AvatarResponse?> Avatar(string client, string text, VoiceCode voiceCode, byte[] image)
         {
             var request = new AvatarRequest()
@@ -73,6 +85,8 @@ namespace Voxart.Client.Low.Processing
             public const string Recognize = "/client/recognize";
             public const string Avatar = "/client/avatar";
             public const string CreateClient = "/client/create";
+            public const string Audios = "/client/audios";
+            public const string Videos = "/client/videos";
         }
     }
 }
