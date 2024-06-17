@@ -156,7 +156,7 @@
 
     private async Task UploadFile(IBrowserFile file)
     {
-        if (file.Size > 1000 && (Path.GetExtension(file.Name) == ".png" || Path.GetExtension(file.Name) == ".jpg"))
+        if (file.Size > 1000 && (Path.GetExtension(file.Name).ToLower() == ".png" || Path.GetExtension(file.Name).ToLower() == ".jpg"))
         {
             using var memoryStream = new MemoryStream();
             await file.OpenReadStream(Convert.ToInt64(MaxFileSizeBytes)).CopyToAsync(memoryStream);

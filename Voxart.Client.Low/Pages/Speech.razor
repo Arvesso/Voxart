@@ -245,7 +245,7 @@
 
     private async Task UploadFile(IBrowserFile file)
     {
-        if (file.Size > 1000 && Path.GetExtension(file.Name) == ".mp3")
+        if (file.Size > 1000 && Path.GetExtension(file.Name).ToLower() == ".mp3")
         {
             audioFile = file;
 
