@@ -24,7 +24,7 @@ namespace Voxart.Server.Low
             builder.Services.AddSingleton<IDidClient>(
                 new DidClient(config["Auth:D-ID:Basic"]!));
 
-            builder.WebHost.UseUrls(config["Listen"]!); // Prod!
+            //builder.WebHost.UseUrls(config["Listen"]!); // Prod!
 
             var app = builder.Build();
 
