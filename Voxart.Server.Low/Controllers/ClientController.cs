@@ -17,9 +17,9 @@ namespace Voxart.Server.Low.Controllers
         {
             var cluster = Guid.NewGuid().ToString();
 
-            ClustersControl.CreateCluster(cluster);
+            //ClustersControl.CreateCluster(cluster);
 
-            return Json(cluster);
+            return Json("access_denied");
         }
 
         [HttpPost("synthesize")]
